@@ -1,12 +1,85 @@
+"""
+Helcio Macedo
+Checksum Verifier + Self Updater
+-----------------------------------------------------------
+Script used to compare if local file its the same as remote
+If not the same.. Download and write the new file on local directory
+"""
+
+import hashlib
+import urllib2
+import optparse
+
+# Remote address to file
+remote_url = 'https://raw.githubusercontent.com/neomacedo/Area51/master/arquivo_teste.txt'
 
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus eget est a velit viverra laoreet ut non nisl. Mauris lacus turpis, rhoncus sed nunc vitae, vehicula feugiat nibh. Cras ac ultrices tellus. Vivamus rhoncus, nulla quis semper cursus, nibh magna hendrerit dolor, vehicula semper ligula nunc vel lectus. In id pharetra nibh. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Morbi sed ante consequat, consequat elit eget, tempus felis. Donec in nunc sapien. Donec ac nisl in lorem luctus congue vestibulum non purus. Mauris elit nisl, pulvinar sit amet nisi at, dignissim tempus ante. Nullam sit amet nunc vitae enim aliquam vestibulum. Vivamus nec felis consequat, ultricies tortor at, posuere sapien.
+# Method who will return md5 Checksum [Local]
+def get_local_md5_sum(url):
+    try:
+        return hashlib.md5(open(local_url, 'a+b').read()).hexdigest()
 
-Nulla vel libero tellus. Aenean at rutrum mi. Etiam sed purus id eros facilisis faucibus. Aenean congue, nibh eget ultricies finibus, nisi elit tempor ipsum, et porta arcu diam vitae quam. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aliquam nec erat sed velit maximus tempor. Praesent neque dui, euismod a ex at, gravida vehicula purus.
+    except Exception as ex:
+        print 'Failed to get remote file checksum! \n Exception: ' + str(ex.message)
 
-Etiam efficitur tellus felis, sed aliquet tellus gravida a. Praesent enim metus, sodales a massa eget, malesuada elementum augue. Donec congue tristique auctor. Pellentesque congue diam ut massa egestas, sodales imperdiet turpis placerat. Nullam volutpat eu lacus ut mattis. Mauris rhoncus augue non leo tempor tincidunt. Suspendisse potenti. Mauris accumsan sollicitudin diam, eget tristique ante pellentesque vel. Ut nisl quam, pulvinar ut pulvinar sit amet, laoreet viverra enim. Donec finibus, nisi sed feugiat consequat, ex nisi dapibus mi, tristique fringilla est lorem et neque. Nulla pretium dictum nisl, eget convallis dui tempor vel. Cras cursus tortor quis ante cursus euismod. Nulla suscipit erat ac elit auctor ornare. Nullam enim ex, maximus eu velit eget, scelerisque hendrerit mauris. Maecenas posuere nisi erat, nec suscipit ante pretium id. Maecenas feugiat odio nec justo interdum, in eleifend ligula mollis.
 
-Vivamus et viverra risus, at lacinia magna. Fusce aliquet turpis in quam tempor tempor. Nullam eu ante eu leo tincidunt consequat. Ut tristique arcu vel leo fermentum, ac mattis mauris blandit. Nulla elit metus, volutpat in enim id, semper pellentesque ipsum. Aliquam sit amet ipsum dui. Nullam imperdiet iaculis vestibulum. Praesent id urna id metus aliquet pharetra.
+# Method who will return md5 Checksum [Remote]
+def get_remote_md5_sum(url):
+    try:
+        # Parse Options
+        opt = optparse.OptionParser()
+        opt.add_option('--url', '-u', default=remote_url)
+        options, args = opt.parse_args()
 
-Updated
+        remote = urllib2.urlopen(options.url)
+        md5hash = hashlib.md5()
 
+        data = remote.read()
+        md5hash.update(data)
+
+        return md5hash.hexdigest()
+
+    except Exception as ex:
+        print 'Failed to get remote file checksum! \n Exception: ' + str(ex.message)
+
+
+# Method who will update file to the same version of remote URL
+def update_local_file():
+    try:
+        # Parse Options
+        opt = optparse.OptionParser()
+        opt.add_option('--url', '-u', default=remote_url)
+        options, args = opt.parse_args()
+
+        remote = urllib2.urlopen(options.url)
+
+        data = remote.read()
+
+        open(os.path.basename(__file__), 'w+').write(data)
+
+        print 'File updated'
+        print 'MD5 Local: ' + get_local_md5_sum(os.path.basename(__file__))
+
+    except Exception as ex:
+        print 'Failed to update file! \n Exception: ' + str(ex.message)
+
+
+# Main Method
+if __name__ == '__main__':
+    print 'MD5 Local: ' + get_local_md5_sum(os.path.basename(__file__))
+    print 'MD5 Remote: ' + get_remote_md5_sum(remote_url)
+
+    if get_local_md5_sum(os.path.basename(__file__)) == get_remote_md5_sum(remote_url):
+        print 'File up-to-date'
+    else:
+        print 'Updating File....'
+        update_local_file()
+
+    # If you want to open your new file (e.g: gateway.py) .. uncomment these lines:
+    # import os
+    # os.system("gateway.py 1")
+    #
+    # Or just import it (if located on the same folder as this)
+    # import gateway
+
+# EOF
